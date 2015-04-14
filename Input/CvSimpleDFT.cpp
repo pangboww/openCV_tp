@@ -180,6 +180,8 @@ void CvSimpleDFT::update()
 	 * inFrameSquare -> channels
 	 */
 	// TODO à compléter ...
+    split(inFrameSquare,channels);
+
 
 	// Process each component (1 for gray images, 3 for color images)
 	for (int i=0; i < nbChannels; i++)
@@ -202,6 +204,8 @@ void CvSimpleDFT::update()
 		// convert component to double
 		// channels[] -> channelsDouble
 		// TODO à compléter ...
+        channels[i].convertTo(channelsDouble[i],CV_64FC1);
+
 
 		// Frequency shift channelsDouble to real complex component with
 		// frequencyShift<double>(...)
@@ -210,6 +214,8 @@ void CvSimpleDFT::update()
 		// of frequency image
 		// channelsDouble[] -> channelsDoubleComplexComponents[][0]
 		// TODO à compléter ...
+        frequencyShift<double>(channelsDouble[i],channelsDoubleComplexComponents[i][0]);
+
 		// channelsDoubleComplexComponents[i][1] is already filled with 0 in
 		// setup method so frequency shift is not necessary on imaginary part
 
@@ -217,31 +223,42 @@ void CvSimpleDFT::update()
 		// channelsDoubleComplexComponents[] -> channelsComplexImages[]
 		// TODO à compléter ...
 
+        cv::merge(channelsDoubleComplexComponents[i],channelsComplexImages[i]);
+
+
+
 		// Perform Fourier transform (dft) on Complex component image
 		// channelsComplexImages[] -> channelsComplexSpectrums[] with
 		// DFT_COMPLEX_OUTPUT
 		// TODO à compléter ...
+        dft(channelsComplexImages[i],channelsComplexSpectrums[i],DFT_COMPLEX_OUTPUT);
+
 
 		// Split component Complex spectrum to real/imag channels
 		// channelsComplexSpectrums[] -> channelsComplexSpectrumComponents[]
 		// TODO à compléter ...
+        split(channelsComplexSpectrums[i],channelsComplexSpectrumComponents[i]);
 
 		// Compute component spectrum magnitude
 		// channelsComplexSpectrumComponents[][0 & 1] -> channelsSpectrumMagnitude[]
-		// TODO à compléter ...
+        // TODO à compléter ...
+        magnitude(channelsComplexSpectrumComponents[i][0],channelsComplexSpectrumComponents[i][1],channelsSpectrumMagnitude[i]);
 
 		// Log scale magnitude with logScaleImg<double>(...) and logScaleFactor
 		// channelsSpectrumMagnitude[] -> channelsSpectrumLogMagnitude[]
 		// TODO à compléter ...
-
+        logScaleImg<double>(channelsSpectrumMagnitude[i],channelsSpectrumLogMagnitude[i],maxLogScaleFactor);
 		// Convert Log scale channels Spectrum to display channels
 		// channelsSpectrumLogMagnitude[] -> channelsSpectrumLogMagnitudeDisplay[]
 		// TODO à compléter ...
-	}
+        convertScaleAbs(channelsSpectrumLogMagnitude[i],channelsSpectrumLogMagnitudeDisplay[i],CV_8UC1);
+
+    }
 
 	// Merge channels spectrum Log magnitude to color spectrum image
 	// channelsSpectrumLogMagnitudeDisplay -> spectrumMagnitudeImage
 	// TODO à compléter ...
+    cv::merge(channelsSpectrumLogMagnitudeDisplay,spectrumMagnitudeImage);
 
 }
 
